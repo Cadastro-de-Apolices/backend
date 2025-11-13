@@ -1,0 +1,77 @@
+// prisma/schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Pessoa {
+  id_pessoa Int     @id @default(autoincrement())
+  cpf_cnpj  String  @unique
+  nome      String
+
+  // Relações
+  imoveis   Imovel[]  @relation("PessoaImoveis")
+  apolices  Apolice[] @relation("PessoaLocatario")
+}
+
+model Imovel {
+  id_imovel     Int     @id @default(autoincrement())
+  codigo_visual Int?
+  nome_imovel   String
+  cep           String
+
+  id_locador Int
+  locador    Pessoa  @relation("PessoaImoveis", fields: [id_locador], references: [id_pessoa])
+
+  apolices   Apolice[]
+
+  @@index([nome_imovel])
+}
+
+enum StatusApolice {
+  ATIVA
+  VENCIDA
+}
+
+model Apolice {
+  id_apolice      Int      @id @default(autoincrement())
+  numero_apolice  String   @unique
+  numero_proposta String?
+  seguradora      String
+  data_emissao    DateTime?
+  data_vencimento DateTime?
+  status          StatusApolice
+  data_pagamento  DateTime?
+  parcelamento    Int?
+
+  id_imovel   Int
+  imovel      Imovel  @relation(fields: [id_imovel], references: [id_imovel])
+
+  id_locatario Int
+  locatario    Pessoa  @relation("PessoaLocatario", fields: [id_locatario], references: [id_pessoa])
+
+  anexos       AnexoApolice[]
+
+  @@index([numero_apolice])
+  @@index([id_imovel])
+  @@index([id_locatario])
+}
+
+model AnexoApolice {
+  id_anexo      Int      @id @default(autoincrement())
+  id_apolice    Int
+  apolice       Apolice  @relation(fields: [id_apolice], references: [id_apolice])
+
+  nome_arquivo  String
+  caminho       String   // ex: /uploads/apolices/1/arquivo.pdf
+  content_type  String?
+  tamanho_bytes Int?
+  criado_em     DateTime @default(now())
+
+  @@index([id_apolice])
+}
