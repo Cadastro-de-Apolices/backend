@@ -38,8 +38,9 @@ async function bootstrap() {
   // Filtro global de erros (Prisma + HttpException)
   app.useGlobalFilters(new PrismaExceptionFilter());
 
-  const port = process.env.PORT || 3001;
-  await app.listen(port);
-  console.log(`🚀 Backend rodando na porta ${port}`);
+const port = process.env.PORT || 3001;
+await app.listen(port, '0.0.0.0');
+console.log(`🚀 Backend rodando na porta ${port}`);
+
 }
 bootstrap();
